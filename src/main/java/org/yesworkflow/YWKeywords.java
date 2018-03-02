@@ -17,7 +17,7 @@ import java.util.Set;
 public class YWKeywords {
 
     /** Enumeration of unique YW tags. */
-    public enum Tag { AS, BEGIN, CALL, DESC, END, FILE, IN, LOG, OUT, PARAM, RETURN, URI;}
+    public enum Tag { AS, BEGIN, CALL, DESC, END, FILE, IN, LOG, OUT, PARAM, RETURN, URI, AMOUNT;}
     
     /** Definitions of the standard keyword for the each tag. */
     public static final String STANDARD_AS_KEYWORD              = "@as";
@@ -32,6 +32,7 @@ public class YWKeywords {
     public static final String STANDARD_PARAM_KEYWORD           = "@param";
     public static final String STANDARD_RETURN_KEYWORD          = "@return";
     public static final String STANDARD_URI_KEYWORD             = "@uri";
+    public static final String STANDARD_AMOUNT_KEYWORD 			= "@amount";
 
     private Map<Tag,String> standardkeywordForTag = new HashMap<Tag,String>();
     private Map<String,Tag> tagForKeyword = new HashMap<String,Tag>();
@@ -50,6 +51,7 @@ public class YWKeywords {
         setStandardKeyword(    STANDARD_PARAM_KEYWORD,  Tag.PARAM   );
         setStandardKeyword(    STANDARD_RETURN_KEYWORD, Tag.RETURN  );
         setStandardKeyword(    STANDARD_URI_KEYWORD,    Tag.URI     );
+        setStandardKeyword(    STANDARD_AMOUNT_KEYWORD, Tag.AMOUNT  );
     }
 
     /** Constructor that assigns alternative keywords to one more tags in addition

@@ -5,6 +5,7 @@ import org.yesworkflow.YWKeywords.Tag;
 public abstract class Flow extends AliasableAnnotation {
     	
     protected UriAnnotation uriAnnotation;
+    protected Amount amount;
     
     public Flow(Long id, Long sourceId, Long lineNumber, String comment, Tag tag) throws Exception {
     	super(id, sourceId, lineNumber, comment, tag);    	
@@ -15,6 +16,8 @@ public abstract class Flow extends AliasableAnnotation {
         
         if (qualification instanceof UriAnnotation) {
             this.uriAnnotation = (UriAnnotation)qualification;
+        } else if (qualification instanceof Amount){
+        	this.amount = (Amount)qualification;
         } else {
             super.qualifyWith(qualification);
         }
@@ -24,6 +27,10 @@ public abstract class Flow extends AliasableAnnotation {
 
     public UriAnnotation uriAnnotation() {
         return uriAnnotation;
+    }
+    
+    public Amount amountAnnotation() {
+    	return amount;
     }
 
     
