@@ -15,4 +15,5 @@ public class Table {
     public static org.jooq.Table<?> SOURCE_LINE         = table("source_line");
     public static org.jooq.Table<?> URI_VARIABLE        = table("uri_variable");
     public static org.jooq.Table<?> URI_VARIABLE_VALUE  = table("uri_variable_value");
+    public static org.jooq.Table<?> AMOUNT 				= table("amount");
 }

@@ -101,3 +101,9 @@ CREATE TABLE uri_variable_value (
     resource            IDENTITY        NOT NULL        REFERENCES resource(id),
     value               VARCHAR         NOT NULL
 );
+
+CREATE TABLE amount (
+	id					IDENTITY		NOT NULL		PRIMARY KEY,
+	qualifies			BIGINT			NOT NULL    	REFERENCES annotation(id),
+	value				BIGINT			NOT NULL
+);

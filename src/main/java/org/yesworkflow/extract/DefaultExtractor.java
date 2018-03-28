@@ -18,6 +18,7 @@ import org.yesworkflow.Language;
 import org.yesworkflow.LanguageModel;
 import org.yesworkflow.YWKeywords;
 import org.yesworkflow.YWKeywords.Tag;
+import org.yesworkflow.annotations.Amount;
 import org.yesworkflow.annotations.Annotation;
 import org.yesworkflow.annotations.As;
 import org.yesworkflow.annotations.Begin;
@@ -330,7 +331,9 @@ public class DefaultExtractor implements Extractor {
                     case RETURN:    annotation = new Return(id, sourceId, lineNumber, annotationString);
                                     break;
                     case URI:       annotation = new UriAnnotation(id, sourceId, lineNumber, annotationString, primaryAnnotation);
-                                    break;   
+                                    break; 
+                    case AMOUNT:	annotation = new Amount(ywdb, id, sourceId, lineNumber, annotationString, primaryAnnotation);
+                    				break;
                 }
                 
                 allAnnotations.add(annotation);

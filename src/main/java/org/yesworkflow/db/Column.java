@@ -75,4 +75,13 @@ public class Column {
         public static Field IS_WORKFLOW         = field("program_block.is_workflow");
         public static Field IS_FUNCTION         = field("program_block.is_function");
     }
+    
+    /**
+     * Columns of the amount table
+     */
+    public static class AMOUNT {
+        public static Field ID                  = field("amount.id");
+        public static Field QUALIFIES           = field("amount.qualifies");
+        public static Field VALUE               = field("amount.value");
+    }
 }

@@ -25,7 +25,7 @@ public abstract class YesWorkflowDB {
 
     protected Connection connection;
     protected Statement statement;
-    protected DSLContext jooq;
+    public DSLContext jooq;// GEÄNDERT
         
     public static YesWorkflowDB createInstance() throws Exception {
         return createInMemoryDB();
@@ -197,6 +197,23 @@ public abstract class YesWorkflowDB {
             .set(NAME, name)
             .set(QUALIFIED_NAME, qualifiedName)
             .set(PROGRAM_ID, programId)
+            .execute();
+        
+        return getGeneratedId();
+    }
+    
+    /**
+     * Insert amount data in amount table in the DB
+     * @param primaryAnnotationId
+     * @param value
+     * @return generated ID
+     * @throws SQLException
+     */
+    public Long insertAmount(Long primaryAnnotationId, Long value) throws SQLException {
+
+        jooq.insertInto(Table.AMOUNT)
+        	.set(QUALIFIES, primaryAnnotationId)
+            .set(VALUE, value)
             .execute();
         
         return getGeneratedId();

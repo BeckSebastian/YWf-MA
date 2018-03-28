@@ -25,7 +25,6 @@ public class Port {
 	    this.data = data;
 		this.flowAnnotation = flowAnnotation;
 		this.beginAnnotation = beginAnnotation;
-		
 		UriAnnotation uriAnnotation = this.flowAnnotation.uriAnnotation();
 		this.uriTemplate = (uriAnnotation != null) ? new UriTemplate(uriAnnotation.value()) : null;
 	}
