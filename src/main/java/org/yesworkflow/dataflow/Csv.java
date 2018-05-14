@@ -10,14 +10,17 @@ import java.util.List;
 
 public class Csv {
 	/**
-	 * parse csv file
+	 * parse csv files at a given splitter string. Default splitter ";" if splitter == null.
 	 * @param file
-	 * @return list of String[] - every String[] is one line splitted by ";"
+	 * @return list of String[] - every String[] is one line splitted by given splitter
 	 */
-	public static List<String[]> parse(File file) {
+	public static List<String[]> parse(File file, String splitter) {
 		File csvFile = file;
 		String line = "";
-		String splitter = ";";
+		// default splitter ";"
+		if (splitter == null) {
+			splitter = ";";
+		}
 		List<String[]> parsedFile = new ArrayList<String[]>();
 
 		BufferedReader br;
@@ -38,13 +41,42 @@ public class Csv {
 		}
 		return parsedFile;
 	}
+	
+	/**
+	 * Gives line represantation of given file
+	 * @param file
+	 * @return List of Strings. Every String is a single line of the file.
+	 */
+	public static List<String> parseLines(File file) {
+		File input = file;
+		String line = "";
+		List<String> parsedFile = new ArrayList<String>();
+
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(input));
+
+			while ((line = br.readLine()) != null) {
+
+				// spliting the line
+				parsedFile.add(line);
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return parsedFile;
+	}
 
 	/**
-	 * gets number of columns
+	 * gets number of columns of the given file
 	 * @param csvFile
 	 * @return number of columns
 	 */
-	private static int numberColumn(List<String[]> csvFile) {
+	public static int numberColumn(File file) {
+		List<String[]> csvFile = parse(file, ";");
 		int maxColumn = 0;
 		for (String[] s : csvFile) {
 			if (maxColumn <= s.length) {
@@ -59,7 +91,8 @@ public class Csv {
 	 * @param csvFile
 	 * @return int number of lines
 	 */
-	private static int numberLine(List<String[]> csvFile) {
+	public static int numberLine(File file) {
+		List<String[]> csvFile = parse(file, ";");
 		return csvFile.size();
 	}
 
@@ -68,7 +101,8 @@ public class Csv {
 	 * @param csvFile
 	 * @return int summed cells
 	 */
-	private static int sumCells(List<String[]> csvFile) {
+	public static int sumCells(File file) {
+		List<String[]> csvFile = parse(file, ";");
 		int maxCells = 0;
 		for (String[] s : csvFile) {
 			maxCells = +s.length;
@@ -95,7 +129,8 @@ public class Csv {
 	 * @param cell
 	 * @return int amount
 	 */
-	private static int filterInt(List<String[]> csvFile, String value, int comperator, String cell) {
+	private static int filterInt(File file, String value, int comperator, String cell) {
+		List<String[]> csvFile = parse(file, ";");
 		int numberFiltered = 0;
 		//row
 		if (isNumeric(cell)) {

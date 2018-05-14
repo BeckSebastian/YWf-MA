@@ -2,6 +2,7 @@ package org.yesworkflow.dataflow;
 
 import static org.yesworkflow.db.Column.COMMENT_TEXT;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -129,14 +130,33 @@ public class Interpreter {
 								String uriEnding = uriSplit[uriSplit.length - 1];
 								String uriFunction = splittedComment[2];
 								String solutionStr = null;
-								// getting the right function calls for the file
+								
+								/*
+								 * MAPPING OF PROGRAM FUNCTIONS TO COMMENT FUNCTIONS
+								 * getting the right function calls for the file
+								 */
 								switch (uriEnding) {
 								case "csv":
+									//number of rows
 									if (uriFunction == "numRows()") {
 										// functioncall
-
+										solutionStr = Integer.toString(Csv.numberLine(new File(uriPath)));
+									}
+									
+									//number of columns
+									if (uriFunction == "numColumns()") {
+										// functioncall
+										solutionStr = Integer.toString(Csv.numberColumn(new File(uriPath)));
+									}
+									
+									//number of cells
+									if (uriFunction == "numCells()") {
+										// functioncall
+										solutionStr = Integer.toString(Csv.sumCells(new File(uriPath)));
 									}
 									break;
+									
+								// files for the pandas script
 								case "musc":
 									if (uriFunction.equalsIgnoreCase("getSamples()")) {
 										solutionStr = Integer.toString(PandaInput.getSamples(uriPath));
@@ -145,8 +165,19 @@ public class Interpreter {
 								case "elems":
 								case "surfs":
 								case "nodes":
+									//Special call for the less ressourceheavy amount of elements call
 									if (uriFunction.equalsIgnoreCase("getNum()")) {
 										solutionStr = PandaInput.getAmountEle(uriPath);
+									}
+									if (uriFunction.equalsIgnoreCase("getDelta()")) {
+										solutionStr = PandaInput.timeDelta(uriPath);
+									}
+									
+									//getting the value of a given parameer back
+									//Form in the YW anotation is: .getParams(WANTEDPARAM)
+									if (uriFunction.contains("getParams")) {
+										String param = uriFunction.substring(7, uriFunction.lastIndexOf(")"));
+										solutionStr = PandaInput.getParam(param, uriPath);
 									}
 									break;
 								case "default":

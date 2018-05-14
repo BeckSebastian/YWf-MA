@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,64 +17,27 @@ import java.util.List;
 public class PandaInput {
 	
 	/**
-	 * parses file for .elems, .node and .surfs
-	 * @param file
+	 * parses file for .elems, .node and .surfs files with the normal splitter " "
+	 * @param file file to be parsed
 	 * @return list of String[] where every String[] contains on line splitted by space
 	 */
 	public static List<String[]> parseEle(File file) {
-		File pandaInput = file;
-		String line = "";
-		String splitter = " ";
-		List<String[]> parsedFile = new ArrayList<String[]>();
-
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(pandaInput));
-
-			while ((line = br.readLine()) != null) {
-
-				// spliting the line
-				String[] values = line.split(splitter, -1);
-				parsedFile.add(values);
-			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return parsedFile;
+		return Csv.parse(file," ");
 	}
 	
-	/**
-	 * Gives linerepresantation of given file
-	 * @param file
-	 * @return List of Strings. Every String is a single line of the file.
-	 */
-	public static List<String> parseLines(File file) {
-		File pandaInput = file;
-		String line = "";
-		List<String> parsedFile = new ArrayList<String>();
-
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(pandaInput));
-
-			while ((line = br.readLine()) != null) {
-
-				// spliting the line
-				parsedFile.add(line);
-			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return parsedFile;
+	private static DecimalFormat df2 = new DecimalFormat(".##");
+	public static String timeDelta(String path) {
+		File file = new File(path);
+		List<String[]> fileParsed = parseEle(file); 
+		double timeTotal = Double.valueOf(fileParsed.get(fileParsed.size()-2)[0]) - Double.valueOf(fileParsed.get(1)[0]);
+		String sTRtimeTotal = df2.format(timeTotal);
+		timeTotal = Double.valueOf(sTRtimeTotal);
+		return Double.toString(timeTotal / (fileParsed.size() - 2));
 	}
 	/**
-	 * Returns amount of lines of the .surfs,.elems,.nodes file given by the path
+	 * Returns amount of lines of the .surfs,.elems,.nodes file given by the path.
+	 * These files have a total amount of lines in the header. So this is a less 
+	 * computationheavy version.
 	 * @param path
 	 * @return amount of lines of given file
 	 */
@@ -83,14 +47,22 @@ public class PandaInput {
 		return fileParsed.get(0)[1];
 	}
 	
+	public static String getAmountEleGeneric(String path, int firstLine) {
+		File file = new File(path);
+		List<String[]> fileParsed = parseEle(file);
+		int lines = fileParsed.size() - firstLine;
+		return Integer.toString(lines);
+	}
 	/**
 	 * searches for a parameter in a cmd file. For Dataanalysis the needed parameters
 	 * are h0 for computiationinterval and hout for datacreationinterval
 	 * @param param
-	 * @param fileCmdParsed
+	 * @param filePath
 	 * @return The searched parameter from the cmd file
 	 */
-	public static String getParam(String param, List<String> fileCmdParsed) {
+	public static String getParam(String param, String filePath) {
+		File fileCmd = new File(filePath);
+		List<String> fileCmdParsed = Csv.parseLines(fileCmd);
 		for(String str : fileCmdParsed) {
 			if ( str.contains(param)) {
 				String[] lineSplitted = str.split(" ");
@@ -105,16 +77,17 @@ public class PandaInput {
 	
 	/**
 	 * Created Dataamount in relation to computationinterval and datacreationintervall from samplesfile
+	 * Calculation: Looking every calculation step if we have a new output step. If a new
+	 * result is available for the new output step the amount counter raises, else we look at the next
+	 * calculation step.
 	 * @param path
 	 * @return Dataamount in relation to computationinterval and datacreationintervall
 	 */
 	public static int getSamples(String path) {
 		File fileSamples = new File(path);
-		File fileCmd = new File("cmd");
-		List<String> fileSamplesParsed = parseLines(fileSamples); 
-		List<String> fileCmdParsed = parseLines(fileCmd);
-		double berechnungsintervall = Double.valueOf(getParam("h0", fileCmdParsed));
-		double ausgabeintervall = Double.valueOf(getParam("hout", fileCmdParsed));
+		List<String> fileSamplesParsed = Csv.parseLines(fileSamples); 
+		double berechnungsintervall = Double.valueOf(getParam("h0", "cmd"));
+		double ausgabeintervall = Double.valueOf(getParam("hout", "cmd"));
 		int samples = fileSamplesParsed.size() - 1;
 		int ausgabeint = (int) (ausgabeintervall * 100);
 		int berechnungsint= (int) (berechnungsintervall * 100);

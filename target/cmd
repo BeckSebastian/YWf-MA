@@ -1,0 +1,299 @@
+# Some issues that seem as a YW bug to me:
+# If some ordinary comments are placed between BEGIN and END comments, they will also be displayed in the final PDF, e.g., as "declaration" or something like that.
+
+
+# @BEGIN pandasBoneTissue
+# @PARAM problem_path @URI file:./
+# @PARAM output_path @URI file:/opt/bonesimulation/outputfiles/
+# @IN FEM_parameters @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/longfemur.shape
+# @IN geometry @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/geo.zip
+# @IN ivars @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/longfemur.ivars
+# @IN material_parameters @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/longfemur.param
+# @IN boundary_conditions @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/bc_sleeping/
+# @OUT tecplout_output_returned @URI file:{output_path}
+
+
+
+###### Data Provisioning
+# Provides necessary input for PANDAS calculation
+# Commands are redirected from PANDAS shell to UNIX shell using the "shell" command before them.
+
+# FEM_parameters
+
+# @BEGIN stage_FEM_parameters
+# @PARAM problem_path @URI file:./
+# @IN FEM_parameters @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/longfemur.shape
+# @OUT FEM_parameters_file @URI file:{problem_path}/longfemur.shape
+
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/longfemur.shape ./longfemur.shape
+
+# @END stage_FEM_parameters
+
+
+# Geometry
+
+# @BEGIN stage_geometry
+# @PARAM problem_path @URI file:./
+# @IN geometry @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/geo.zip
+# @OUT geometry_zip @URI file:{problem_path}/geo.zip
+
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/geo.zip ./geo.zip
+
+# @END stage_geometry
+
+
+# @BEGIN unzip_geometry
+# @PARAM problem_path @URI file:./
+# @IN geometry_zip @URI file:{problem_path}/geo.zip
+# @OUT geometry_nodes_file @URI file:{problem_path}/geo/longfemur.nodes
+# @OUT geometry_elements_file @URI file:{problem_path}/geo/longfemur.elems
+# @OUT geometry_surface_file @URI file:{problem_path}/geo/longfemur.surfs
+
+shell unzip ./geo.zip geo/longfemur.nodes geo/longfemur.elems geo/longfemur.surfs
+
+# @END unzip_geometry
+
+
+# Ivars
+# Indicates the unknown variables Pandas shall calculate. So, this is actually not input data, but some kind of configuration for the calculation.
+
+# @BEGIN stage_ivars
+# @PARAM problem_path @URI file:./
+# @IN ivars @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/longfemur.ivars
+# @OUT ivars_file @URI file:{problem_path}/longfemur.ivars
+
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/longfemur.ivars ./longfemur.ivars
+
+# @END stage_ivars
+
+
+# Material parameters
+
+# @BEGIN stage_material_parameters
+# @PARAM problem_path @URI file:./
+# @IN material_parameters @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/longfemur.param
+# @OUT material_parameters_file @URI file:{problem_path}/longfemur.param
+
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/longfemur.param ./longfemur.param
+
+# @END stage_material_parameters
+
+
+# Boundary conditions
+
+# @BEGIN stage_boundary_conditions
+# @PARAM problem_path @URI file:./
+# @IN boundary_conditions @URI file:/opt/bonesimulation/inputfiles/files_separated/simple/bc_sleeping/
+# @OUT bc_bound_file @URI file:{problem_path}/longfemur.bound
+# @OUT bc_muscle_forces_files @URI file:{problem_path}/*.musc
+# @OUT bc_joint_contact_forces_files @URI file:{problem_path}/*.join
+
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/bc_sleeping/longfemur.bound ./
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/bc_sleeping/*.musc ./
+shell cp /opt/bonesimulation/inputfiles/files_separated/simple/bc_sleeping/*.join ./
+
+# @END stage_boundary_conditions
+
+
+
+
+###### Pandas-specific parts of the script
+
+
+# @BEGIN set_SoE_parameters
+# @OUT SoE_parameters
+
+#--- Matrix typw, Vorkond., etc.
+#============================
+
+linear  set     matrix 		profile
+linear  set     preauto         TRUE
+linear  set     solver          GMRES
+
+# @END set_SoE_parameters
+
+
+
+#--- Read problem
+
+
+# @BEGIN read_FEM_parameters
+# @PARAM problem_path @URI file:./
+# @IN FEM_parameters_file @URI file:{problem_path}/longfemur.shape
+# @OUT FEM_parameters_internal
+
+read 	./longfemur.shape
+
+# @END read_FEM_parameters
+
+
+
+# @BEGIN read_geometry
+# @PARAM problem_path @URI file:./
+# @PARAM SoE_parameters
+# @PARAM FEM_parameters_internal
+# @IN geometry_nodes_file @URI file:{problem_path}/geo/longfemur.nodes
+# @IN geometry_elements_file @URI file:{problem_path}/geo/longfemur.elems
+# @IN geometry_surface_file @URI file:{problem_path}/geo/longfemur.surfs
+# @OUT geometry_internal
+
+
+read ./geo/longfemur.nodes
+read ./geo/longfemur.elems
+read ./geo/longfemur.surfs
+
+# @END read_geometry
+
+
+# @BEGIN read_ivars
+# @PARAM problem_path @URI file:./
+# @IN geometry_internal
+# @IN ivars_file @URI file:{problem_path}/longfemur.ivars
+# @OUT ivars_internal
+
+read 	./longfemur.ivars
+
+# @END read_ivars
+
+
+# @BEGIN read_material_parameters
+# @PARAM problem_path @URI file:./
+# @PARAM ivars_internal
+# @IN material_parameters_file @URI file:{problem_path}/longfemur.param
+# @OUT material_parameters_internal
+
+read 	./longfemur.param
+
+# @END read_material_parameters
+
+
+# PR: The code snippet in the following code block only reads one file (longfemur.bound) of the various files that are provisioned before.
+# Because this one file includes references to all other files that are read afterwards.
+
+# @BEGIN read_boundary_conditions
+# @PARAM problem_path @URI file:./
+# @IN geometry_internal
+# @IN bc_bound_file @URI file:{problem_path}/longfemur.bound
+# @IN bc_muscle_forces_files @URI file:{problem_path}/*.musc
+# @IN bc_joint_contact_forces_files @URI file:{problem_path}/*.join
+# @OUT boundary_conditions_internal
+
+read 	./longfemur.bound
+
+# @END read_boundary_conditions
+
+
+
+# @BEGIN set_numerical_parameters
+# @OUT numerical_parameters
+
+#--- allg. Parameter einstellen
+#==============================
+
+#--- Vereinfachtes Newton 
+newton	set     simp    TRUE
+
+
+#--- Numerische Tangente 
+
+newton 	set 	numtan	FALSE
+
+#--- NEWTON-Parameter
+newton 	set 	atol 	1e-4
+newton 	set 	rtol 	0.0
+newton 	set 	iter 	200
+
+
+#--- LINEAR-Parameter
+linear 	set 	atol 	1e-5
+linear 	set 	rtol 	0.0
+linear 	set 	iter 	200
+
+
+#--- Zeitintegration
+dae	set     method  Euler        
+    
+
+#--- DAE-Parameter
+
+dae 	set 	h0 	.02
+dae 	set 	hmax 	.02
+dae 	set 	hmin 	1e-10
+dae 	set 	atol 	1e-1
+dae 	set 	rtol 	1e-2
+dae 	set 	hout 	.05	# Ausgabeintervall für Tecplot
+
+dae 	set  	ncontrol 	FALSE
+
+#--- DAE-Parameter (lokal)
+set 	atol_ci 5e-2
+
+#--- Rampe
+# 
+#------------------------------------------
+#--- Belastungspfad
+set growth 0.0
+
+# @END set_numerical_parameters
+
+
+
+
+# @BEGIN set_outputfile_format
+# @OUT FLAGs_outputfile_format
+
+#--- Ausgabe im tecplot-Format (./tec/*.dat)
+set 	tecout	TRUE
+set	quadtec FALSE   # FALSE bei MINI
+#set	quadtec TRUE   # TRUE else
+
+set 	outsave 0		# Status speichern
+
+# @END set_outputfile_format
+
+
+
+# @BEGIN calculate
+# @PARAM problem_path @URI file:./
+# @PARAM FEM_parameters_internal
+# @PARAM ivars_internal
+# @IN geometry_internal
+# @IN material_parameters_internal
+# @IN boundary_conditions_internal
+# @PARAM numerical_parameters
+# @PARAM FLAGs_outputfile_format
+# @OUT tecplot_output @URI file:{problem_path}/tecstat/
+# @OUT SIGNAL_calculation_completed
+
+
+# The following command is not needed when only executing one simulation cycle.
+
+cycle 1
+
+# @END calculate
+
+
+# @BEGIN stop_pandas
+# @PARAM SIGNAL_calculation_completed
+
+exit
+
+# @END stop_pandas
+
+
+###### Result (De-)Provisioning
+# Returns result of PANDAS calculation back to user.
+# Commands are redirected from PANDAS shell to UNIX shell using the "shell" command before them.
+
+# @BEGIN return_result
+# @PARAM problem_path @URI file:./
+# @PARAM output_path @URI file:/opt/bonesimulation/outputfiles/
+# @IN tecplot_output @URI file:{problem_path}/tecstat/*
+# @OUT tecplout_output_returned @URI file:{output_path}
+
+# shell cp ./tecstat/* /opt/bonesimulation/outputfiles/ -r
+
+# @END return_result
+
+
+# @END pandasBoneTissue
